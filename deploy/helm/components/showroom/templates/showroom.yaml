@@ -90,6 +90,11 @@ data:
     cluster_domain: {{ .Values.deployer.domain }}
     demo_namespace: {{ .Values.demo.namespace }}
     demo_app: {{ .Values.demo.appName }}
+    guid: {{ .Values.showroom.name | default "showroom" }}
+    username: admin
+    password: ""
+    openshift_api_url: {{ .Values.deployer.apiUrl | default (printf "https://api.%s:6443" .Values.deployer.domain) }}
+    openshift_console_url: https://console-openshift-console.{{ .Values.deployer.domain }}
 ---
 # Showroom PVC
 apiVersion: v1
