@@ -87,14 +87,18 @@ metadata:
   namespace: {{ .Values.showroom.namespace }}
 data:
   user_data.yml: |
+    # Match the attribute names used in content
+    openshift_cluster_domain: {{ .Values.deployer.domain }}
+    openshift_api_url: {{ .Values.deployer.apiUrl | default (printf "https://api.%s:6443" .Values.deployer.domain) }}
+    openshift_console_url: https://console-openshift-console.{{ .Values.deployer.domain }}
+    user: admin
+    password: ""
+    guid: {{ .Values.showroom.name | default "showroom" }}
+    # Legacy names for backward compatibility
     cluster_domain: {{ .Values.deployer.domain }}
     demo_namespace: {{ .Values.demo.namespace }}
     demo_app: {{ .Values.demo.appName }}
-    guid: {{ .Values.showroom.name | default "showroom" }}
     username: admin
-    password: ""
-    openshift_api_url: {{ .Values.deployer.apiUrl | default (printf "https://api.%s:6443" .Values.deployer.domain) }}
-    openshift_console_url: https://console-openshift-console.{{ .Values.deployer.domain }}
 ---
 # Showroom PVC
 apiVersion: v1

@@ -10,18 +10,18 @@ asciidoc:
     release-version: master
     page-pagination: true # enables navigation at bottom of each instruction page.
 
-    # OpenShift cluster configuration (defaults - overridden by user_data.yml)
+    # OpenShift cluster configuration (populated by user_data.yml merge)
     openshift_version: "4.14"
-    openshift_cluster_domain: "apps.example.com"
-    openshift_api_url: "https://api.example.com:6443"
-    openshift_console_url: "https://console-openshift-console.apps.example.com"
+    # openshift_cluster_domain: populated from user_data.yml
+    # openshift_api_url: populated from user_data.yml
+    # openshift_console_url: populated from user_data.yml
 
-    # User credentials (defaults - overridden by user_data.yml)
-    user: "admin"
-    password: ""
+    # User credentials (populated by user_data.yml merge)
+    # user: populated from user_data.yml
+    # password: populated from user_data.yml
 
-    # Workshop settings (defaults - overridden by user_data.yml)
-    guid: "workshop"
+    # Workshop settings (populated by user_data.yml merge)
+    # guid: populated from user_data.yml
     page-toclevels: 2
 
     page-links:
