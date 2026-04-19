@@ -11,7 +11,7 @@
 
 The OpenShift 101 workshop has been successfully validated end-to-end on the odp-prod OpenShift cluster. All 4 modules function correctly, all commands execute successfully, and the Showroom lab guide interface is fully operational.
 
-**Workshop URL**: https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
+**Workshop URL**: https://showroom-{guid}.apps.{cluster-domain}
 
 **Total Validation Time**: ~15 minutes  
 **Modules Tested**: 4 (index + 4 modules + conclusion = 6 pages)  
@@ -404,8 +404,8 @@ The **OpenShift 101: Fundamentals** workshop is **production-ready** and fully v
 
 - **Repository**: https://github.com/open-demo-platform/openshift-101-workshop-
 - **Cluster**: odp-prod (AWS, OpenShift 4.21)
-- **Workshop URL**: https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
-- **Demo App URL**: http://parksmap-parksmap-demo.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
+- **Workshop URL**: https://showroom-{guid}.apps.{cluster-domain}
+- **Demo App URL**: http://parksmap-parksmap-demo.apps.{cluster-domain}
 
 ### Sign-Off
 

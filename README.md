@@ -6,7 +6,9 @@ A hands-on workshop teaching Red Hat OpenShift Container Platform basics through
 [![OpenShift](https://img.shields.io/badge/OpenShift-4.14+-red)](https://www.openshift.com/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-**Workshop URL**: https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
+**Workshop URL**: https://showroom-{guid}.apps.{cluster-domain}/modules/index.html
+
+> **Note**: Access the workshop content at `/modules/index.html` to go directly to the lab guide.
 
 ---
 
@@ -117,13 +119,13 @@ Manage application configuration separately from code:
 
 ## Quick Start
 
-### Option 1: Access the Deployed Workshop
+### Option 1: Access a Deployed Workshop Instance
 
-The workshop is already deployed and accessible at:
+When the workshop is deployed to a cluster, access it at:
 
-**https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com**
+**https://showroom-{guid}.apps.{cluster-domain}/modules/index.html**
 
-Simply open the URL in your browser and start learning!
+The `{guid}` is a unique identifier for your workshop instance, and `{cluster-domain}` is your OpenShift cluster's application domain (e.g., `apps.mycluster.example.com`).
 
 ---
 
