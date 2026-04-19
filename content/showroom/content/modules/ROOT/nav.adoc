@@ -1,7 +1,23 @@
-* xref:module-01.adoc[1. RPM Native Container]
-** xref:module-01.adoc#repositories[Repositories]
-** xref:module-01.adoc#software[Software]
+* xref:index.adoc[Welcome]
 
-* xref:module-02.adoc[2. GitHub Sourced Container]
-** xref:module-02.adoc#prerequisites[Install Prerequisites]
-** xref:module-02.adoc#container[Enable Container]
+* xref:module-01.adoc[1. OpenShift Fundamentals]
+** xref:module-01.adoc#console[Web Console]
+** xref:module-01.adoc#cli[Command Line Interface]
+** xref:module-01.adoc#projects[Projects & Namespaces]
+
+* xref:module-02.adoc[2. Deploying Applications]
+** xref:module-02.adoc#container-image[From Container Image]
+** xref:module-02.adoc#s2i[Source-to-Image (S2I)]
+** xref:module-02.adoc#scaling[Scaling Applications]
+
+* xref:module-03.adoc[3. Networking & Routes]
+** xref:module-03.adoc#services[Services]
+** xref:module-03.adoc#routes[Routes]
+** xref:module-03.adoc#tls[TLS Configuration]
+
+* xref:module-04.adoc[4. Configuration Management]
+** xref:module-04.adoc#configmaps[ConfigMaps]
+** xref:module-04.adoc#secrets[Secrets]
+** xref:module-04.adoc#volumes[Mounting Volumes]
+
+* xref:conclusion.adoc[Next Steps]

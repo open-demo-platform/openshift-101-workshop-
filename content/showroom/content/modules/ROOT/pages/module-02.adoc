@@ -1,138 +1,438 @@
-= Managing an Application from GitHub
+= Module 2: Deploying Applications
 
-In the first half of this workshop, we packaged an application into this portable container format manually using rpms.
-In the second half, we will consider that you may want to manage software from GitHub or some kind of software versioning application.
-Rather than installing rpms, we have individual software files and pull them out of that version control into a group of systems.
+== Introduction
 
-== Install RHEL 8 UBI
+In this module, you'll learn how to deploy applications to OpenShift using multiple methods:
 
-In this lab, we will be using a different Red Hat Enterprise Linux version in my container. 
+* Deploying from pre-built container images
+* Building from source code using Source-to-Image (S2I)
+* Scaling applications up and down
+* Triggering rolling updates
 
-. Verify the host system release 
+**Estimated Time**: 60 minutes
 
+[#container-image]
+== Deploying from a Container Image
+
+The simplest way to deploy an application is from an existing container image.
+
+=== Using the Web Console
+
+. Switch to the **Developer** perspective:
 +
-[source,bash]
-----
-cat /etc/redhat-release
-----
-+ 
-NOTE: The `bastion` system is Red Hat Enterprise Linux 9, and when you built the previous container, you used the UBI9 image. This means both the image and the container were built off the same Red Hat Enterprise Linux packages. 
+.. Click the perspective dropdown in the top-left
+.. Select **Developer**
+.. Ensure your project `workshop-{guid}` is selected
 
-. As we did previously in this lab, Use `buildah from` to pull down the Red Hat Enterprise Linux 8 UBI.
-
+. Deploy the Parks Map application:
 +
-[source,bash]
-----
-buildah from registry.access.redhat.com/ubi8/ubi
-----
-
-NOTE: Because you already pulled one image named `ubi-working-container` this one is called `ubi-working-container-1`. 
-
-[#prerequisites]
-== Install Prerequisites
-
-Now that you have a working container, you will use the same process as before installing all the prerequisites, changing config files, and manipulating the contents of this container to be in the desired state.
-
-The software you will install is a JavaScript-based game that runs on a web browser. As before in the lab, use dnf to install software inside the container. 
-
-. Use `buildah run` and install Apache (`httpd`) into the `ubi-working-container-1` container. 
+.. Click **+Add** in the left navigation
+.. Click **Container images**
+.. In **Image name from external registry**, enter:
 +
-[source,bash]
+[source,text]
 ----
-buildah run ubi-working-container-1 -- dnf -y install httpd
+quay.io/openshiftroadshow/parksmap:latest
 ----
+.. Click the search icon (magnifying glass) to validate the image
+.. In **Application**, select **Create Application**
+.. In **Application Name**, enter: `parksmap-app`
+.. In **Name**, enter: `parksmap`
+.. Click **Create**
 
-== Enable Service
-
-The next thing to do is to use a systemctl to enable the service. The ubi-init provides full systemd service to the container.
-This will start up any of the services that are enabled. 
-
-. Enable the `httpd` service using `buildah run`
-
+. Monitor the deployment:
 +
-[source,bash]
-----
-buildah run ubi-working-container-1 -- systemctl enable httpd
-----
+.. You'll be redirected to the **Topology** view
+.. Click on the `parksmap` deployment to see details
+.. Watch the pod status change from `Pending` → `ContainerCreating` → `Running`
 
-NOTE: The UBI standard image doesn't have systemd installed on it by default. The `ubi-init` container image does include systemd. Plan accordingly to which image you use to build applications.  
+=== Verifying the Deployment
 
-== Explore Source Materials
-
-A GitHub repository has already been synchronized to `/home/devops/clumsy-bird/` This repository contains the configurations for your application.
-
-. Verify the repository is cloned inside the `/home/devops/` directory
-+
-[source,bash]
-----
-cd /home/devops/
-----
-
-+
-[source,bash]
-----
-git clone https://github.com/ellisonleao/clumsy-bird
-----
-+
-NOTE: The output states that the software has already been checked out. 
-+
-. Explore the JavaScript contents, index files, and everything else that we need for this web-based JavaScript software.
+. Check that the pod is running:
 +
 [source,bash,role=execute]
 ----
-ls clumsy-bird
-----
-
-== Add Source Materials to Container
-
-. Now that you have verified the source materials exist, you will put the software inside of my container image using the `buildah copy` command.
-+
-[source,bash]
-----
-buildah copy ubi-working-container-1 clumsy-bird /var/www/html
-----
-
-[#container]
-== Enable Container in Background
-
-In the previous section of this lab, you ran the game natively through interactive mode. Because you are now building a web application you will need to run the container in the background and access it through a web address. 
-
-. Execute `buildah config` to specify a port and initialize the container. 
-
-+
-[source,bash]
-----
-buildah config --port 80 --cmd "/usr/sbin/init" ubi-working-container-1
-----
-
-NOTE: The command makes a configuration change to this container. I'm configuring this container to accept connections to its port 80. When the container starts up, it should run the init command, which, in this case, is going to be the Apache daemon right from earlier when I enabled it.
-
-== Commit Container and Deploy
-
-. Now that we have a container in a working configured state, it is time to make that permanent by committing it to a container image called `clumsy-bird`
-+
-[source,bash]
-----
-buildah commit ubi-working-container-1 clumsy-bird
-----
-
-. Verify that the image was created with `podman`
-+
-[source,bash]
-----
-podman images
+oc get pods -n workshop-{guid}
 ----
 +
-. Run the container Now it's time to run the container. 
+.Expected Output
+[source,textinfo]
+----
+NAME                        READY   STATUS    RESTARTS   AGE
+parksmap-5d6f8c8b4f-xk2w7   1/1     Running   0          2m
+----
+
+. Get more details about the pod:
 +
-[source,bash]
+[source,bash,role=execute]
 ----
-podman run -d -p 8500:80 clumsy-bird
+oc describe pod -l deployment=parksmap
 ----
 
-== Verify Application
+. View the application logs:
++
+[source,bash,role=execute]
+----
+oc logs -l deployment=parksmap
+----
 
-Verify that the application is running by navigating to
+TIP: The `-l` flag uses label selectors. OpenShift automatically adds labels like `deployment=parksmap` to resources.
 
-http://bastion.{guid}.example.opentlc.com:8500
+[#s2i]
+== Building from Source with S2I
+
+Source-to-Image (S2I) is an OpenShift feature that builds container images directly from source code without requiring a Dockerfile.
+
+=== Understanding S2I
+
+S2I works by:
+
+1. Detecting the programming language
+2. Selecting an appropriate builder image
+3. Injecting your source code into the builder
+4. Running the build process
+5. Creating a new container image
+6. Deploying the image
+
+=== Deploying a Node.js Application
+
+. Create a new application from source:
++
+[source,bash,role=execute]
+----
+oc new-app nodejs:18-ubi8~https://github.com/sclorg/nodejs-ex.git \
+  --name=nodejs-app \
+  -n workshop-{guid}
+----
++
+.Expected Output
+[source,textinfo]
+----
+--> Found image abc123... (2 weeks old) in image stream "openshift/nodejs" under tag "18-ubi8" for "nodejs:18-ubi8"
+
+    Node.js 18
+    ----------
+    Node.js 18 available as container is a base platform for building and running various Node.js 18 applications and frameworks.
+
+    * The source repository appears to match: nodejs
+    * A source build using source code from https://github.com/sclorg/nodejs-ex.git will be created
+      * The resulting image will be pushed to image stream tag "nodejs-app:latest"
+      * Use 'oc start-build nodejs-app' to trigger a new build
+
+--> Creating resources ...
+    imagestream.image.openshift.io "nodejs-app" created
+    buildconfig.build.openshift.io "nodejs-app" created
+    deployment.apps "nodejs-app" created
+    service "nodejs-app" created
+--> Success
+----
+
+. Watch the build process:
++
+[source,bash,role=execute]
+----
+oc logs -f bc/nodejs-app
+----
++
+TIP: Press `Ctrl+C` to stop following the logs once the build completes.
+
+. Verify the build completed successfully:
++
+[source,bash,role=execute]
+----
+oc get builds
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME           TYPE     FROM          STATUS     STARTED         DURATION
+nodejs-app-1   Source   Git@abc123    Complete   3 minutes ago   2m15s
+----
+
+. Check that the application deployed:
++
+[source,bash,role=execute]
+----
+oc get pods -l deployment=nodejs-app
+----
+
+=== Understanding the Build Process
+
+Let's explore what S2I created:
+
+. View the BuildConfig:
++
+[source,bash,role=execute]
+----
+oc get buildconfig nodejs-app -o yaml
+----
++
+This shows the build strategy, source repository, and output image.
+
+. View the ImageStream:
++
+[source,bash,role=execute]
+----
+oc get imagestream nodejs-app
+----
++
+ImageStreams are OpenShift-specific resources that track container image updates.
+
+. View the Deployment:
++
+[source,bash,role=execute]
+----
+oc get deployment nodejs-app
+----
+
+[#scaling]
+== Scaling Applications
+
+OpenShift makes it easy to scale applications horizontally (adding more pods).
+
+=== Manual Scaling via CLI
+
+. Check current replicas:
++
+[source,bash,role=execute]
+----
+oc get deployment parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+parksmap   1/1     1            1           10m
+----
+
+. Scale the `parksmap` deployment to 3 replicas:
++
+[source,bash,role=execute]
+----
+oc scale deployment/parksmap --replicas=3
+----
++
+.Expected Output
+[source,textinfo]
+----
+deployment.apps/parksmap scaled
+----
+
+. Verify the scaling:
++
+[source,bash,role=execute]
+----
+oc get pods -l deployment=parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME                        READY   STATUS    RESTARTS   AGE
+parksmap-5d6f8c8b4f-4l9xm   1/1     Running   0          15s
+parksmap-5d6f8c8b4f-fqw8z   1/1     Running   0          15s
+parksmap-5d6f8c8b4f-xk2w7   1/1     Running   0          10m
+----
+
+. Watch the pods scale in real-time:
++
+[source,bash,role=execute]
+----
+oc get pods -l deployment=parksmap -w
+----
++
+TIP: Press `Ctrl+C` to stop watching.
+
+=== Scaling via Web Console
+
+. Go to the **Developer** perspective → **Topology**
+. Click on the `parksmap` deployment
+. In the **Details** tab, find the **Pod** section
+. Click the up arrow to scale to 4 pods
+. Click the down arrow to scale back to 2 pods
+
+=== Scale Down
+
+. Scale back to 1 replica:
++
+[source,bash,role=execute]
+----
+oc scale deployment/parksmap --replicas=1
+----
+
+. Verify:
++
+[source,bash,role=execute]
+----
+oc get pods -l deployment=parksmap
+----
+
+== Triggering a New Build
+
+S2I builds can be triggered manually to rebuild the application.
+
+. Trigger a new build for the Node.js app:
++
+[source,bash,role=execute]
+----
+oc start-build nodejs-app
+----
++
+.Expected Output
+[source,textinfo]
+----
+build.build.openshift.io/nodejs-app-2 started
+----
+
+. Watch the new build:
++
+[source,bash,role=execute]
+----
+oc logs -f build/nodejs-app-2
+----
+
+. List all builds:
++
+[source,bash,role=execute]
+----
+oc get builds
+----
++
+You'll see both `nodejs-app-1` and `nodejs-app-2`.
+
+== Rolling Updates
+
+OpenShift automatically performs rolling updates when you change a deployment.
+
+=== Updating an Image Tag
+
+. View the current image:
++
+[source,bash,role=execute]
+----
+oc get deployment parksmap -o jsonpath='{.spec.template.spec.containers[0].image}'
+----
+
+. Update the deployment to use a different tag (simulating an update):
++
+[source,bash,role=execute]
+----
+oc set image deployment/parksmap parksmap=quay.io/openshiftroadshow/parksmap:1.3.0
+----
++
+.Expected Output
+[source,textinfo]
+----
+deployment.apps/parksmap image updated
+----
+
+. Watch the rolling update:
++
+[source,bash,role=execute]
+----
+oc rollout status deployment/parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+Waiting for deployment "parksmap" rollout to finish: 0 of 1 updated replicas are available...
+deployment "parksmap" successfully rolled out
+----
+
+. View rollout history:
++
+[source,bash,role=execute]
+----
+oc rollout history deployment/parksmap
+----
+
+=== Rolling Back a Deployment
+
+. Roll back to the previous version:
++
+[source,bash,role=execute]
+----
+oc rollout undo deployment/parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+deployment.apps/parksmap rolled back
+----
+
+. Verify the rollback:
++
+[source,bash,role=execute]
+----
+oc rollout status deployment/parksmap
+----
+
+== Viewing Application Details
+
+=== Using oc describe
+
+. Get comprehensive details about a deployment:
++
+[source,bash,role=execute]
+----
+oc describe deployment parksmap
+----
++
+This shows replicas, selectors, pod templates, events, and conditions.
+
+=== Viewing Events
+
+. List recent events in your project:
++
+[source,bash,role=execute]
+----
+oc get events --sort-by='.lastTimestamp' | tail -20
+----
+
+Events show scaling, pod creation, image pulls, and errors.
+
+=== Accessing Application Logs
+
+. View logs from all pods with a specific label:
++
+[source,bash,role=execute]
+----
+oc logs -l deployment=parksmap --tail=50
+----
+
+. Stream logs in real-time:
++
+[source,bash,role=execute]
+----
+oc logs -f -l deployment=parksmap
+----
+
+== Module 2 Summary
+
+Congratulations! You've completed Module 2. You learned:
+
+* ✅ How to deploy applications from container images
+* ✅ How to build applications from source using Source-to-Image (S2I)
+* ✅ How to scale applications horizontally
+* ✅ How to trigger new builds
+* ✅ How rolling updates and rollbacks work
+* ✅ How to view application logs and events
+
+**Key Takeaways**:
+
+* S2I builds images from source without Dockerfiles
+* Scaling is as simple as `oc scale deployment/<name> --replicas=<n>`
+* OpenShift performs zero-downtime rolling updates automatically
+* ImageStreams track image changes and trigger deployments
+* Logs and events are essential for troubleshooting
+
+== Next Steps
+
+In **Module 3: Networking & Routes**, you'll learn how to expose your applications to external traffic using Services and Routes.
+
+Click **3. Networking & Routes** in the navigation menu to continue.
 

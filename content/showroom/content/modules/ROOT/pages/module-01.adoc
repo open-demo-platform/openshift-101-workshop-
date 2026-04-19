@@ -1,149 +1,358 @@
-= Building an Application with rpms
+= Module 1: OpenShift Fundamentals
 
-== Downloading the UBI
+== Introduction
 
-In this lab, you will be installing software into the container 
-image running as an interactive application. To do this you will
-need `yum`, but do not need `systemd` for managing services within the
-container environment.  For that reason, you will be using the *Standard*
-UBI image (as opposed to the Minimal or Multi-service images).
+Welcome to Module 1! In this module, you'll learn the fundamentals of OpenShift Container Platform, including:
 
-Using the "buildah from" command will download and meld the container image. This particular image we are using is the Red Hat Universal Base Image or UBI. From the ourput of the command, you will notice that we are pulling down the latest one, which is for RHEL 9. 
+* Navigating the OpenShift web console
+* Using the `oc` command-line interface (CLI)
+* Understanding Projects and Namespaces
+* Basic cluster exploration
 
-. Execute the  download the Standard UBI
-image from Red Hat's registry.
+**Estimated Time**: 45 minutes
 
+[#console]
+== Exploring the Web Console
+
+The OpenShift web console provides a powerful graphical interface for managing your applications and cluster resources.
+
+=== Accessing the Console
+
+. Open the OpenShift web console in a new browser tab:
 +
-[source,sh,role=execute]
-----
-buildah from registry.access.redhat.com/ubi9/ubi
-----
+{openshift_console_url}[OpenShift Console,window=_blank]
 
-[#repositories]
-== Installing Repositories
-In this lab, you are going to containerize a software package that is already
-packaged in RPM format and stored in the Extra Packages for Enterprise Linux
-(EPEL) repository.
-
-Software often has requirements for prerequisite software that must be installed
-on the machine for it to work properly.  `yum` will resolve those
-dependencies for you, as long as it can locate the required packages in
-repositories defined on the machine.  The Red Hat Universal Base Image (UBI)
-downloaded in the previous step has access to some Red Hat Enterprise Linux
-repositories.  However, the target package for the lab is from EPEL.  
-
-. In the command below, `buildah` is going to run a command on the
-`ubi-working-container` image.  The `--` indicates that the command should be
-executed from within the container, which means the results will be applied into
-the container image.  Lastly, you are providing the `yum` command to install a
-package that defines all of the repositories from EPEL, `epel-release-latest-9`.
-
+. Log in with your credentials:
 +
-[source,bash]
-----
-buildah run ubi-working-container -- yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-----
+* *Username*: `{user}`
+* *Password*: `{password}`
 
+. After logging in, you'll see the **Administrator** perspective by default.
 
-. You can verify that the above command did not install the RPM on the host system.
+=== Understanding Console Perspectives
 
+OpenShift offers two main perspectives:
+
+* **Administrator**: Full cluster management, operators, projects, and infrastructure
+* **Developer**: Application-centric view for building, deploying, and managing apps
+
+. Switch between perspectives using the dropdown in the top-left corner
 +
-[source,bash]
-----
-rpm -q epel-release
-----
+TIP: For this workshop, we'll primarily use the **Administrator** perspective to understand the platform fundamentals.
 
-NOTE: If your repository configurations are not distributed as an RPM, but instead as
-individual `.repo` files, you could use the `buildah copy` command to copy
-files from the host operating system into the container image.  You will see
-an example of using `buildah copy` later in this lab.
+=== Exploring the Dashboard
 
-[#software]
-== Installing Software
-
-
-. Now that the yum repositories are defined within the container, execute 
-another `yum install`, within the container, to install the target
-software: `moon-buggy`.
-
+. From the **Administrator** perspective, click **Home** → **Overview**
 +
-[source,bash]
-----
-buildah run ubi-working-container -- yum -y install moon-buggy
-----
+You'll see cluster health, resource usage, and recent events.
 
-
-== Committing the Container Image
-
-. At this point, the container is configured.  It is time to transition from a
-working container into a committed image.  In the command below, you will use
-the `buildah` command to commit the working container to an image called:
-`moon-buggy`.
-
+. Explore the navigation menu on the left:
 +
-[source,bash]
-----
-buildah commit ubi-working-container moon-buggy
-----
+* **Workloads**: Pods, Deployments, StatefulSets
+* **Networking**: Services, Routes, Ingresses
+* **Storage**: PersistentVolumeClaims, StorageClasses
+* **Builds**: BuildConfigs, ImageStreams (OpenShift-specific)
+* **Operators**: Operator management and installation
 
+NOTE: The console is context-aware and changes based on the selected project.
+
+[#cli]
+== Using the OpenShift CLI
+
+The `oc` command-line tool is the primary way to interact with OpenShift from the terminal.
+
+=== Logging In via CLI
+
+. In the terminal below (or the terminal tab), log in to the OpenShift cluster:
 +
-. The output of `podman image list` should confirm the image was created.
-
+[source,bash,role=execute]
+----
+oc login {openshift_api_url} -u {user} -p {password}
+----
 +
-[source,bash]
-----
-podman image list
-----
-
-
-== Deploy the Container
-
-Now the software has been installed and a new container image created.  It is
-time to spawn a runtime of the container image and validate the software.  The
-software we are using is a command line command.  
-
-. When you `run` the container,
-it will be in interactive (`-it`) mode, based on the `moon-buggy` container
-image and the command run interactively will be `/usr/bin/moon-buggy`.
-
-+
-[source,bash]
-----
-podman run -it moon-buggy /usr/bin/moon-buggy
-----
-
-+
+.Expected Output
 [source,textinfo]
 ----
+Login successful.
 
-<<< OUTPUT ABRIDGED >>>
-               MM     MM   OOOOO    OOOOO   NN     N
-               M M   M M  O     O  O     O  N N    N
-               M  M M  M  O     O  O     O  N  N   N
-               M   M   M  O     O  O     O  N   N  N
-               M       M  O     O  O     O  N    N N
-               M       M   OOOOO    OOOOO   N     NN
-
-                     BBBBBB   U     U   GGGGG    GGGGG   Y     Y
-                     B     B  U     U  G     G  G     G   Y   Y
-                     BBBBBB   U     U  G        G          Y Y
-                     B     B  U     U  G   GGG  G   GGG     Y
-                     B     B  U     U  G     G  G     G    Y
-                     BBBBBB    UUUUU    GGGGG    GGGGG   YY
-
-<<< OUTPUT ABRIDGED >>>
+You have access to 70 projects, the list has been suppressed. You can list all projects with 'oc projects'
 ----
 
-. You can now play the Moon Buggy game, which is a text-based version of the
-popular Moon Patrol.  When you are finished, use the `q` command to quit the
-game, which will terminate the container.
-
+. Verify your login by checking your current user:
 +
-Alternatively, you can use `podman` to kill the running container from
-*Terminal 2*.
-
+[source,bash,role=execute]
+----
+oc whoami
+----
 +
+.Expected Output
+[source,textinfo]
+----
+{user}
+----
+
+. Check the OpenShift server version:
++
+[source,bash,role=execute]
+----
+oc version
+----
++
+You'll see both client (`oc`) and server (OpenShift) versions.
+
+=== Basic CLI Commands
+
+Let's explore some essential `oc` commands:
+
+. View cluster information:
++
+[source,bash,role=execute]
+----
+oc cluster-info
+----
+
+. List all nodes in the cluster:
++
+[source,bash,role=execute]
+----
+oc get nodes
+----
++
+.Sample Output
+[source,textinfo]
+----
+NAME                                         STATUS   ROLES                  AGE   VERSION
+ip-10-0-22-36.us-east-2.compute.internal    Ready    control-plane,master   5d    v1.27.6
+ip-10-0-30-58.us-east-2.compute.internal    Ready    worker                 5d    v1.27.6
+ip-10-0-34-72.us-east-2.compute.internal    Ready    worker                 5d    v1.27.6
+----
+
+. Get more details about a specific node:
++
+[source,bash,role=execute]
+----
+oc describe node $(oc get nodes -o jsonpath='{.items[0].metadata.name}')
+----
++
+NOTE: This command describes the first node in the cluster. You'll see CPU, memory, pods, and more.
+
+[#projects]
+== Projects and Namespaces
+
+In OpenShift, **Projects** are an extension of Kubernetes namespaces with additional features like RBAC and resource quotas.
+
+=== Understanding Projects
+
+Projects provide:
+
+* **Isolation**: Separate resources between teams or applications
+* **RBAC**: Role-Based Access Control for who can do what
+* **Resource Quotas**: Limits on CPU, memory, and storage
+* **Network Policies**: Control traffic between projects
+
+=== Creating Your First Project
+
+. Create a new project for this workshop:
++
+[source,bash,role=execute]
+----
+oc new-project workshop-{guid}
+----
++
+.Expected Output
+[source,textinfo]
+----
+Now using project "workshop-{guid}" on server "{openshift_api_url}".
+----
+
+. Verify you're in the correct project:
++
+[source,bash,role=execute]
+----
+oc project
+----
++
+.Expected Output
+[source,textinfo]
+----
+Using project "workshop-{guid}" on server "{openshift_api_url}".
+----
+
+. List all projects you have access to:
++
+[source,bash,role=execute]
+----
+oc projects
+----
+
+=== Exploring Project Details
+
+. Get detailed information about your project:
++
+[source,bash,role=execute]
+----
+oc describe project workshop-{guid}
+----
++
+You'll see annotations, labels, resource quotas (if any), and more.
+
+. View the project in the web console:
++
+.. Go to **Home** → **Projects**
+.. Find and click on `workshop-{guid}`
+.. Explore the **Overview**, **Workloads**, **YAML**, and **Role Bindings** tabs
+
+=== Switching Between Projects
+
+. List all projects:
++
+[source,bash,role=execute]
+----
+oc get projects
+----
+
+. Switch to a different project (e.g., `default`):
++
+[source,bash,role=execute]
+----
+oc project default
+----
+
+. Switch back to your workshop project:
++
+[source,bash,role=execute]
+----
+oc project workshop-{guid}
+----
+
+TIP: You can use `oc project <project-name>` to switch contexts quickly.
+
+== Understanding Kubernetes Resources in OpenShift
+
+OpenShift is built on Kubernetes, so you can use standard `kubectl` commands with `oc`.
+
+=== Listing Resources
+
+. List all resource types available in the cluster:
++
+[source,bash,role=execute]
+----
+oc api-resources | head -20
+----
+
+. List pods in your project (currently none):
++
+[source,bash,role=execute]
+----
+oc get pods
+----
++
+.Expected Output
+[source,textinfo]
+----
+No resources found in workshop-{guid} namespace.
+----
+
+. List pods in all namespaces (admin view):
++
+[source,bash,role=execute]
+----
+oc get pods --all-namespaces | head -10
+----
++
+You'll see system pods running in various namespaces.
+
+=== Using Labels and Selectors
+
+Labels are key-value pairs attached to objects. They're essential for organizing and selecting resources.
+
+. View all projects with labels:
++
+[source,bash,role=execute]
+----
+oc get projects --show-labels
+----
+
+. View only projects with a specific label (if any):
++
+[source,bash,role=execute]
+----
+oc get projects -l "name=workshop-{guid}"
+----
+
+== CLI Tips and Tricks
+
+=== Command Shortcuts
+
+The `oc` CLI supports many shortcuts:
+
+* `oc get po` → `oc get pods`
+* `oc get svc` → `oc get services`
+* `oc get deploy` → `oc get deployments`
+
+. Try getting services with the shortcut:
++
+[source,bash,role=execute]
+----
+oc get svc -n workshop-{guid}
+----
+
+=== Output Formats
+
+You can change the output format of `oc` commands:
+
+. Get projects in YAML format:
++
+[source,bash,role=execute]
+----
+oc get project workshop-{guid} -o yaml
+----
+
+. Get projects in JSON format:
++
+[source,bash,role=execute]
+----
+oc get project workshop-{guid} -o json
+----
+
+. Use JSONPath to extract specific fields:
++
+[source,bash,role=execute]
+----
+oc get project workshop-{guid} -o jsonpath='{.metadata.name}'
+----
+
+=== Watching Resources
+
+You can watch resources in real-time using the `-w` flag:
+
 [source,bash]
 ----
-podman kill $(podman ps | grep -v CONTAINER | cut -f1 -d" " )
+oc get pods -w
 ----
+
+TIP: Press `Ctrl+C` to stop watching.
+
+== Module 1 Summary
+
+Congratulations! You've completed Module 1. You learned:
+
+* ✅ How to navigate the OpenShift web console
+* ✅ How to log in and use the `oc` CLI
+* ✅ The difference between Administrator and Developer perspectives
+* ✅ How to create and manage Projects (OpenShift namespaces)
+* ✅ Basic cluster exploration commands
+* ✅ How to list and describe Kubernetes resources
+
+**Key Takeaways**:
+
+* Projects provide isolation, RBAC, and resource quotas
+* `oc` is compatible with `kubectl` commands
+* The web console and CLI offer different but complementary views
+* Labels and selectors are essential for resource organization
+
+== Next Steps
+
+You're now ready to move on to **Module 2: Deploying Applications**, where you'll learn how to deploy containerized applications to OpenShift using both the web console and CLI.
+
+Click **2. Deploying Applications** in the navigation menu to continue.

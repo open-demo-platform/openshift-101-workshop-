@@ -1,20 +1,33 @@
 name: modules
-title: Default Title
+title: OpenShift 101
 version: master
 nav:
   - modules/ROOT/nav.adoc
 
 asciidoc:
   attributes:
-    # page-toclevels: -1               # <- This will remove the TOC that appear in the right sidebar at wider resolutions
-    lab_name: "I'm the lab_name var"
+    lab_name: "OpenShift 101: Fundamentals"
     release-version: master
     page-pagination: true # enables navigation at bottom of each instruction page.
-    my_var: "foo"
-    guid: my-guid
-    ssh_user: devops
-    ssh_password: devops
-    ssh_command: ssh someone@example.com
+
+    # OpenShift cluster configuration
+    openshift_version: "4.14"
+    openshift_cluster_domain: "apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com"
+    openshift_api_url: "https://api.open-demo-platform.odp-prod.sandbox3047.opentlc.com:6443"
+    openshift_console_url: "https://console-openshift-console.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com"
+
+    # User credentials (placeholders - will be injected by AgnosticD)
+    user: "admin"
+    password: "your-password"
+
+    # Workshop settings
+    guid: "workshop"
+    page-toclevels: 2
+
     page-links:
-    - url: https://redhat.com
-      text: Red Hat
+    - url: https://docs.openshift.com/container-platform/4.14/
+      text: OpenShift 4.14 Documentation
+    - url: https://learn.openshift.com/
+      text: OpenShift Interactive Learning Portal
+    - url: https://www.redhat.com/en/technologies/cloud-computing/openshift
+      text: Red Hat OpenShift Product Page

@@ -1,0 +1,495 @@
+= Module 3: Networking & Routes
+
+== Introduction
+
+In this module, you'll learn how OpenShift handles networking and how to expose applications to external traffic:
+
+* Understanding Kubernetes Services
+* Creating and managing OpenShift Routes
+* Configuring HTTP and HTTPS (TLS) access
+* Testing application connectivity
+
+**Estimated Time**: 45 minutes
+
+[#services]
+== Understanding Services
+
+In Kubernetes and OpenShift, **Services** provide stable networking for pods. Since pods are ephemeral and can be recreated with different IP addresses, Services act as a stable endpoint.
+
+=== Service Types
+
+OpenShift supports several Service types:
+
+* **ClusterIP**: Internal-only access (default)
+* **NodePort**: Exposes on a port on each node
+* **LoadBalancer**: Cloud provider load balancer
+* **ExternalName**: Maps to an external DNS name
+
+=== Viewing Existing Services
+
+. List services in your project:
++
+[source,bash,role=execute]
+----
+oc get services -n workshop-{guid}
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+nodejs-app   ClusterIP   172.30.123.45    <none>        8080/TCP   20m
+parksmap     ClusterIP   172.30.67.89     <none>        8080/TCP   30m
+----
+
+. Describe a service:
++
+[source,bash,role=execute]
+----
+oc describe service parksmap
+----
++
+.Key Information
+[source,textinfo]
+----
+Name:              parksmap
+Namespace:         workshop-{guid}
+Selector:          deployment=parksmap
+Type:              ClusterIP
+IP:                172.30.67.89
+Port:              8080-tcp  8080/TCP
+TargetPort:        8080/TCP
+Endpoints:         10.128.2.15:8080
+----
+
+NOTE: The `Selector` field shows which pods this Service targets. The `Endpoints` show the actual pod IPs.
+
+=== Testing Internal Connectivity
+
+. Get the Service's cluster IP:
++
+[source,bash,role=execute]
+----
+oc get service parksmap -o jsonpath='{.spec.clusterIP}'
+----
+
+. Create a temporary pod to test connectivity:
++
+[source,bash,role=execute]
+----
+oc run test-pod --image=registry.access.redhat.com/ubi9/ubi-minimal:latest --rm -it --restart=Never -- /bin/bash
+----
++
+This creates an interactive pod. Inside the pod, run:
++
+[source,bash]
+----
+curl http://parksmap.workshop-{guid}.svc.cluster.local:8080
+----
++
+You should see HTML output from the parksmap application.
++
+Type `exit` to leave the pod (it will be automatically deleted).
+
+TIP: Services can be accessed via `<service-name>.<namespace>.svc.cluster.local` from within the cluster.
+
+=== Creating a Service Manually
+
+While `oc new-app` creates Services automatically, you can create them manually:
+
+. Create a Service YAML file:
++
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: custom-service
+  namespace: workshop-{guid}
+spec:
+  selector:
+    app: myapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+EOF
+----
+
+. Verify the Service was created:
++
+[source,bash,role=execute]
+----
+oc get service custom-service
+----
+
+. Delete the custom service (we don't need it):
++
+[source,bash,role=execute]
+----
+oc delete service custom-service
+----
+
+[#routes]
+== Creating Routes
+
+**Routes** are OpenShift's way of exposing Services to external traffic. They provide:
+
+* HTTP/HTTPS access from outside the cluster
+* Custom hostnames
+* TLS termination
+* Load balancing across pods
+
+=== Creating a Route via CLI
+
+. Expose the `parksmap` Service as a Route:
++
+[source,bash,role=execute]
+----
+oc expose service parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+route.route.openshift.io/parksmap exposed
+----
+
+. View the created Route:
++
+[source,bash,role=execute]
+----
+oc get route parksmap
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME       HOST/PORT                                                              PATH   SERVICES   PORT       TERMINATION   WILDCARD
+parksmap   parksmap-workshop-{guid}.{openshift_cluster_domain}                          parksmap   8080-tcp                 None
+----
+
+. Get the Route URL:
++
+[source,bash,role=execute]
+----
+echo "http://$(oc get route parksmap -o jsonpath='{.spec.host}')"
+----
+
+. Test the Route with curl:
++
+[source,bash,role=execute]
+----
+curl -s http://$(oc get route parksmap -o jsonpath='{.spec.host}') | head -20
+----
++
+You should see HTML output from the parksmap application.
+
+=== Accessing the Application in a Browser
+
+. Get the full Route URL:
++
+[source,bash,role=execute]
+----
+oc get route parksmap -o jsonpath='{"http://"}{.spec.host}{"\n"}'
+----
+
+. Copy the URL and open it in a new browser tab
++
+You should see the Parks Map application UI.
+
+=== Creating a Route via Web Console
+
+. Go to **Developer** perspective → **Topology**
+. Click on the `nodejs-app` deployment
+. In the **Resources** tab, scroll to **Routes**
+. Click **Create Route**
+. In the **Create Route** form:
++
+* **Name**: `nodejs-app`
+* **Service**: Select `nodejs-app`
+* **Target Port**: `8080 → 8080 (TCP)`
+* Leave other fields as default
+* Click **Create**
+
+. Verify the Route was created:
++
+[source,bash,role=execute]
+----
+oc get route nodejs-app
+----
+
+. Access the nodejs-app via the Route:
++
+[source,bash,role=execute]
+----
+curl http://$(oc get route nodejs-app -o jsonpath='{.spec.host}')
+----
+
+[#tls]
+== Configuring TLS (HTTPS)
+
+OpenShift Routes support TLS termination, providing encrypted HTTPS access to your applications.
+
+=== TLS Termination Types
+
+* **Edge**: TLS terminates at the router, traffic to pods is HTTP
+* **Passthrough**: TLS terminates at the pod (encrypted end-to-end)
+* **Re-encrypt**: TLS terminates at router, re-encrypted to pods
+
+=== Creating a Secure Route (Edge Termination)
+
+. Create a secure Route for the parksmap application:
++
+[source,bash,role=execute]
+----
+oc create route edge parksmap-secure \
+  --service=parksmap \
+  --port=8080-tcp
+----
++
+.Expected Output
+[source,textinfo]
+----
+route.route.openshift.io/parksmap-secure created
+----
+
+. View the secure Route:
++
+[source,bash,role=execute]
+----
+oc get route parksmap-secure
+----
++
+.Expected Output
+[source,textinfo]
+----
+NAME              HOST/PORT                                                                     PATH   SERVICES   PORT       TERMINATION   WILDCARD
+parksmap-secure   parksmap-secure-workshop-{guid}.{openshift_cluster_domain}                          parksmap   8080-tcp   edge          None
+----
+
+NOTE: The `TERMINATION` column shows `edge`, indicating TLS termination at the router.
+
+. Test HTTPS access:
++
+[source,bash,role=execute]
+----
+curl -s https://$(oc get route parksmap-secure -o jsonpath='{.spec.host}') | head -20
+----
+
+. View the Route configuration:
++
+[source,bash,role=execute]
+----
+oc get route parksmap-secure -o yaml
+----
++
+Look for the `tls:` section showing the termination type.
+
+=== Creating a Secure Route via Web Console
+
+. Go to **Developer** → **Topology**
+. Click on `nodejs-app`
+. In the **Actions** dropdown (top right), select **Add Route**
+. Configure:
++
+* **Name**: `nodejs-app-secure`
+* **Service**: `nodejs-app`
+* **Target Port**: `8080 → 8080 (TCP)`
+* **Secure Route**: Check the box
+* **TLS Termination**: Select **Edge**
+* **Insecure Traffic**: Select **Redirect**
+* Click **Create**
+
+. Verify the secure Route:
++
+[source,bash,role=execute]
+----
+oc get route nodejs-app-secure
+----
+
+. Test HTTPS access:
++
+[source,bash,role=execute]
+----
+curl -L https://$(oc get route nodejs-app-secure -o jsonpath='{.spec.host}')
+----
++
+NOTE: The `-L` flag follows redirects (HTTP → HTTPS).
+
+== Route Customization
+
+=== Custom Hostnames
+
+You can specify custom hostnames for Routes (if your cluster's domain supports it):
+
+[source,bash]
+----
+oc create route edge my-custom-route \
+  --service=parksmap \
+  --hostname=custom.example.com
+----
+
+NOTE: Custom hostnames require DNS configuration and may not work in this lab environment.
+
+=== Path-Based Routing
+
+Routes support path-based routing:
+
+. Create a Route with a specific path:
++
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: parksmap-path
+  namespace: workshop-{guid}
+spec:
+  path: /parks
+  to:
+    kind: Service
+    name: parksmap
+  port:
+    targetPort: 8080-tcp
+EOF
+----
+
+. Verify the Route:
++
+[source,bash,role=execute]
+----
+oc get route parksmap-path
+----
+
+. Test access (this may return 404 if the app doesn't serve at /parks):
++
+[source,bash,role=execute]
+----
+curl http://$(oc get route parksmap-path -o jsonpath='{.spec.host}')/parks
+----
+
+. Clean up the path-based route:
++
+[source,bash,role=execute]
+----
+oc delete route parksmap-path
+----
+
+== Load Balancing
+
+Routes automatically load-balance traffic across multiple pod replicas.
+
+=== Testing Load Balancing
+
+. Scale the parksmap deployment to 3 replicas:
++
+[source,bash,role=execute]
+----
+oc scale deployment/parksmap --replicas=3
+----
+
+. Wait for all pods to be ready:
++
+[source,bash,role=execute]
+----
+oc get pods -l deployment=parksmap -w
+----
++
+Press `Ctrl+C` once all 3 pods show `Running`.
+
+. Make multiple requests to see load balancing:
++
+[source,bash,role=execute]
+----
+for i in {1..10}; do
+  curl -s http://$(oc get route parksmap -o jsonpath='{.spec.host}') | grep -o 'parksmap-[a-z0-9]*'
+done
+----
++
+You should see requests distributed across different pod names.
+
+. Scale back to 1 replica:
++
+[source,bash,role=execute]
+----
+oc scale deployment/parksmap --replicas=1
+----
+
+== Troubleshooting Networking
+
+=== Checking Service Endpoints
+
+If a Service isn't working, check if it has endpoints:
+
+[source,bash,role=execute]
+----
+oc get endpoints parksmap
+----
+
+If `ENDPOINTS` is `<none>`, the Service selector doesn't match any pods.
+
+=== Checking Route Status
+
+. Describe a Route to see its status:
++
+[source,bash,role=execute]
+----
+oc describe route parksmap
+----
+
+. Look for the `Admitted` status:
++
+[source,textinfo]
+----
+Status:
+  Ingress:
+    Conditions:
+      Type:    Admitted
+      Status:  True
+----
+
+=== Testing Connectivity
+
+. Test internal Service connectivity:
++
+[source,bash,role=execute]
+----
+oc run test-curl --image=registry.access.redhat.com/ubi9/ubi-minimal:latest --rm -it --restart=Never -- curl -s http://parksmap:8080
+----
+
+. Test external Route connectivity:
++
+[source,bash,role=execute]
+----
+curl -I http://$(oc get route parksmap -o jsonpath='{.spec.host}')
+----
++
+A `200 OK` or `302 Found` response indicates the Route is working.
+
+== Module 3 Summary
+
+Congratulations! You've completed Module 3. You learned:
+
+* ✅ How Kubernetes Services provide stable networking for pods
+* ✅ How to create and manage OpenShift Routes
+* ✅ How to expose applications via HTTP and HTTPS
+* ✅ How TLS termination works (Edge, Passthrough, Re-encrypt)
+* ✅ How Routes load-balance traffic across pods
+* ✅ How to troubleshoot networking issues
+
+**Key Takeaways**:
+
+* Services use selectors to target pods
+* Routes expose Services to external traffic
+* TLS termination provides HTTPS access with minimal configuration
+* OpenShift automatically generates hostnames using the cluster domain
+* Load balancing is automatic when multiple pods exist
+
+== Next Steps
+
+In **Module 4: Configuration Management**, you'll learn how to manage application configuration using ConfigMaps and Secrets.
+
+Click **4. Configuration Management** in the navigation menu to continue.

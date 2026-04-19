@@ -1,0 +1,554 @@
+= Module 4: Configuration Management
+
+== Introduction
+
+In this module, you'll learn how to manage application configuration in OpenShift using:
+
+* ConfigMaps for non-sensitive configuration data
+* Secrets for sensitive information like passwords and tokens
+* Mounting configuration as environment variables
+* Mounting configuration as files/volumes
+* Updating configuration and observing pod behavior
+
+**Estimated Time**: 45 minutes
+
+[#configmaps]
+== Working with ConfigMaps
+
+**ConfigMaps** store non-sensitive configuration data as key-value pairs. They decouple configuration from container images, making applications more portable.
+
+=== Creating a ConfigMap from Literals
+
+. Create a ConfigMap with literal values:
++
+[source,bash,role=execute]
+----
+oc create configmap app-config \
+  --from-literal=APP_NAME="OpenShift 101 Workshop" \
+  --from-literal=APP_ENV=development \
+  --from-literal=LOG_LEVEL=debug \
+  -n workshop-{guid}
+----
++
+.Expected Output
+[source,textinfo]
+----
+configmap/app-config created
+----
+
+. View the ConfigMap:
++
+[source,bash,role=execute]
+----
+oc get configmap app-config -o yaml
+----
++
+.Output
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: workshop-{guid}
+data:
+  APP_NAME: "OpenShift 101 Workshop"
+  APP_ENV: development
+  LOG_LEVEL: debug
+----
+
+. List all ConfigMaps:
++
+[source,bash,role=execute]
+----
+oc get configmaps
+----
+
+=== Creating a ConfigMap from a File
+
+. Create a sample configuration file:
++
+[source,bash,role=execute]
+----
+cat <<EOF > /tmp/app.properties
+database.host=postgres.example.com
+database.port=5432
+database.name=myapp
+cache.enabled=true
+cache.ttl=3600
+EOF
+----
+
+. Create a ConfigMap from the file:
++
+[source,bash,role=execute]
+----
+oc create configmap app-properties \
+  --from-file=/tmp/app.properties \
+  -n workshop-{guid}
+----
+
+. View the ConfigMap:
++
+[source,bash,role=execute]
+----
+oc get configmap app-properties -o yaml
+----
++
+Notice the entire file content is stored as a single key-value pair.
+
+=== Creating a ConfigMap via YAML
+
+. Create a ConfigMap using YAML:
++
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+  namespace: workshop-{guid}
+data:
+  DB_HOST: "postgres.workshop-{guid}.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "workshop"
+  DB_POOL_SIZE: "10"
+EOF
+----
+
+. Verify the ConfigMap:
++
+[source,bash,role=execute]
+----
+oc describe configmap database-config
+----
+
+[#secrets]
+== Working with Secrets
+
+**Secrets** store sensitive information like passwords, OAuth tokens, and SSH keys. They are encoded (base64) and can be encrypted at rest.
+
+=== Secret Types
+
+OpenShift supports several Secret types:
+
+* `Opaque`: Generic secret (default)
+* `kubernetes.io/service-account-token`: Service account token
+* `kubernetes.io/dockercfg`: Docker registry credentials
+* `kubernetes.io/tls`: TLS certificate and key
+
+=== Creating a Secret from Literals
+
+. Create a Secret for database credentials:
++
+[source,bash,role=execute]
+----
+oc create secret generic database-credentials \
+  --from-literal=DB_USERNAME=appuser \
+  --from-literal=DB_PASSWORD=SuperSecret123! \
+  -n workshop-{guid}
+----
++
+.Expected Output
+[source,textinfo]
+----
+secret/database-credentials created
+----
+
+. View the Secret (values are base64-encoded):
++
+[source,bash,role=execute]
+----
+oc get secret database-credentials -o yaml
+----
++
+.Output
+[source,yaml]
+----
+apiVersion: v1
+kind: Secret
+metadata:
+  name: database-credentials
+  namespace: workshop-{guid}
+type: Opaque
+data:
+  DB_PASSWORD: U3VwZXJTZWNyZXQxMjMh
+  DB_USERNAME: YXBwdXNlcg==
+----
+
+NOTE: The values are base64-encoded, NOT encrypted. Use OpenShift encryption at rest for production.
+
+. Decode a secret value:
++
+[source,bash,role=execute]
+----
+oc get secret database-credentials -o jsonpath='{.data.DB_PASSWORD}' | base64 -d
+echo
+----
++
+.Expected Output
+[source,textinfo]
+----
+SuperSecret123!
+----
+
+=== Creating a Secret from a File
+
+. Create a sample SSH private key (dummy for demo):
++
+[source,bash,role=execute]
+----
+cat <<EOF > /tmp/id_rsa
+-----BEGIN RSA PRIVATE KEY-----
+MIIBogIBAAJBALKZD0nEffqM1ACuak0bijtqE2QrI/KLADv7l3kK3ppMyCuLKoF0
+(This is a dummy key for demo purposes only)
+-----END RSA PRIVATE KEY-----
+EOF
+----
+
+. Create a Secret from the file:
++
+[source,bash,role=execute]
+----
+oc create secret generic ssh-key \
+  --from-file=id_rsa=/tmp/id_rsa \
+  -n workshop-{guid}
+----
+
+. View the Secret:
++
+[source,bash,role=execute]
+----
+oc get secret ssh-key -o yaml
+----
+
+=== Creating a TLS Secret
+
+. Create a self-signed certificate (for demo):
++
+[source,bash,role=execute]
+----
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout /tmp/tls.key \
+  -out /tmp/tls.crt \
+  -subj "/CN=myapp.example.com"
+----
+
+. Create a TLS Secret:
++
+[source,bash,role=execute]
+----
+oc create secret tls myapp-tls \
+  --cert=/tmp/tls.crt \
+  --key=/tmp/tls.key \
+  -n workshop-{guid}
+----
+
+. View the TLS Secret:
++
+[source,bash,role=execute]
+----
+oc describe secret myapp-tls
+----
+
+[#volumes]
+== Using ConfigMaps and Secrets in Pods
+
+Now let's use ConfigMaps and Secrets in a running application.
+
+=== Mounting as Environment Variables
+
+. Create a deployment that uses ConfigMap and Secret as environment variables:
++
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-demo
+  namespace: workshop-{guid}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-demo
+  template:
+    metadata:
+      labels:
+        app: config-demo
+    spec:
+      containers:
+      - name: config-demo
+        image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo 'App: \$APP_NAME, Env: \$APP_ENV, DB User: \$DB_USERNAME'; sleep 30; done"]
+        env:
+        - name: APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_NAME
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_ENV
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-credentials
+              key: DB_PASSWORD
+EOF
+----
+
+. Verify the deployment:
++
+[source,bash,role=execute]
+----
+oc get deployment config-demo
+----
+
+. Wait for the pod to be running:
++
+[source,bash,role=execute]
+----
+oc get pods -l app=config-demo
+----
+
+. View the pod logs to see environment variables in action:
++
+[source,bash,role=execute]
+----
+oc logs -l app=config-demo --tail=5
+----
++
+.Expected Output
+[source,textinfo]
+----
+App: OpenShift 101 Workshop, Env: development, DB User: appuser
+App: OpenShift 101 Workshop, Env: development, DB User: appuser
+----
+
+NOTE: The password is available as `$DB_PASSWORD` but we're not printing it for security.
+
+=== Mounting as Volumes
+
+ConfigMaps and Secrets can be mounted as files in a pod.
+
+. Create a deployment with ConfigMap mounted as a volume:
++
+[source,bash,role=execute]
+----
+cat <<EOF | oc apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: volume-demo
+  namespace: workshop-{guid}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: volume-demo
+  template:
+    metadata:
+      labels:
+        app: volume-demo
+    spec:
+      containers:
+      - name: volume-demo
+        image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo '=== Config File Contents ==='; cat /etc/config/app.properties; echo '=== Database Config ==='; ls -la /etc/db-config/; sleep 30; done"]
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+        - name: db-config-volume
+          mountPath: /etc/db-config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-properties
+      - name: db-config-volume
+        configMap:
+          name: database-config
+EOF
+----
+
+. Wait for the pod to be running:
++
+[source,bash,role=execute]
+----
+oc get pods -l app=volume-demo
+----
+
+. View the logs to see mounted configuration files:
++
+[source,bash,role=execute]
+----
+oc logs -l app=volume-demo --tail=20
+----
++
+You'll see the contents of `app.properties` and files from `database-config`.
+
+. Exec into the pod to explore the mounted volumes:
++
+[source,bash,role=execute]
+----
+oc exec -it deployment/volume-demo -- /bin/sh
+----
++
+Inside the pod, run:
++
+[source,bash]
+----
+ls -la /etc/config/
+cat /etc/config/app.properties
+ls -la /etc/db-config/
+cat /etc/db-config/DB_HOST
+exit
+----
+
+== Updating Configuration
+
+When you update a ConfigMap or Secret, pods using them need to be aware of changes.
+
+=== Updating a ConfigMap
+
+. Update the `app-config` ConfigMap:
++
+[source,bash,role=execute]
+----
+oc patch configmap app-config -p '{"data":{"APP_ENV":"production","LOG_LEVEL":"info"}}'
+----
+
+. Check if the pod picked up the change (environment variables):
++
+[source,bash,role=execute]
+----
+oc logs -l app=config-demo --tail=3
+----
++
+NOTE: Environment variables do NOT update automatically. The pod must be restarted.
+
+. Restart the deployment to pick up new environment variables:
++
+[source,bash,role=execute]
+----
+oc rollout restart deployment/config-demo
+----
+
+. Wait for the new pod:
++
+[source,bash,role=execute]
+----
+oc rollout status deployment/config-demo
+----
+
+. Verify the new environment variables:
++
+[source,bash,role=execute]
+----
+oc logs -l app=config-demo --tail=3
+----
++
+.Expected Output
+[source,textinfo]
+----
+App: OpenShift 101 Workshop, Env: production, DB User: appuser
+----
+
+NOTE: Mounted volumes (ConfigMaps as files) update automatically within ~60 seconds, but environment variables require a pod restart.
+
+=== Demonstrating Volume Updates
+
+. Update the `database-config` ConfigMap:
++
+[source,bash,role=execute]
+----
+oc patch configmap database-config -p '{"data":{"DB_POOL_SIZE":"20"}}'
+----
+
+. Wait ~60 seconds for the volume to sync, then check the pod:
++
+[source,bash,role=execute]
+----
+sleep 65
+oc exec deployment/volume-demo -- cat /etc/db-config/DB_POOL_SIZE
+----
++
+.Expected Output
+[source,textinfo]
+----
+20
+----
+
+The file was updated without restarting the pod!
+
+== Best Practices
+
+=== ConfigMap Best Practices
+
+* ✅ Use ConfigMaps for non-sensitive configuration
+* ✅ Keep ConfigMaps small (< 1MB)
+* ✅ Use descriptive names (e.g., `app-config`, not `config1`)
+* ✅ Mount as volumes for configuration files that need live updates
+* ❌ Don't store secrets in ConfigMaps
+
+=== Secret Best Practices
+
+* ✅ Use Secrets for passwords, tokens, and keys
+* ✅ Enable encryption at rest in production
+* ✅ Limit RBAC access to Secrets
+* ✅ Rotate secrets regularly
+* ❌ Don't log secret values
+* ❌ Don't commit secrets to Git
+
+== Cleaning Up
+
+. Delete the demo deployments:
++
+[source,bash,role=execute]
+----
+oc delete deployment config-demo volume-demo
+----
+
+. (Optional) Delete ConfigMaps and Secrets:
++
+[source,bash,role=execute]
+----
+oc delete configmap app-config app-properties database-config
+oc delete secret database-credentials ssh-key myapp-tls
+----
+
+== Module 4 Summary
+
+Congratulations! You've completed Module 4. You learned:
+
+* ✅ How to create ConfigMaps from literals, files, and YAML
+* ✅ How to create Secrets for sensitive data
+* ✅ How to mount ConfigMaps and Secrets as environment variables
+* ✅ How to mount ConfigMaps and Secrets as volumes
+* ✅ How configuration updates behave (env vars vs volumes)
+* ✅ Best practices for managing configuration in OpenShift
+
+**Key Takeaways**:
+
+* ConfigMaps store non-sensitive configuration, Secrets store sensitive data
+* Environment variables require pod restarts to update
+* Volume-mounted configuration updates automatically (within ~60s)
+* Secrets are base64-encoded, not encrypted (use encryption at rest)
+* Proper RBAC is essential for Secret security
+
+== Next Steps
+
+Congratulations on completing all four modules! You now have a solid foundation in OpenShift fundamentals.
+
+Click **Next Steps** in the navigation menu for recommendations on what to learn next.

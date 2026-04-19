@@ -1,0 +1,217 @@
+= Next Steps
+
+== Congratulations!
+
+You've successfully completed the OpenShift 101 workshop! 🎉
+
+Throughout this workshop, you've learned the fundamentals of Red Hat OpenShift Container Platform:
+
+* ✅ **Module 1**: Navigating the web console and using the `oc` CLI
+* ✅ **Module 2**: Deploying applications from images and source code (S2I)
+* ✅ **Module 3**: Exposing applications with Services and Routes
+* ✅ **Module 4**: Managing configuration with ConfigMaps and Secrets
+
+You now have the foundation to build, deploy, and manage applications on OpenShift!
+
+== What You've Learned
+
+=== Core Concepts
+
+* **Projects and Namespaces**: Isolation and multi-tenancy
+* **Pods**: The smallest deployable units
+* **Deployments**: Managing application lifecycles
+* **Services**: Stable networking for pods
+* **Routes**: External access to applications
+* **ConfigMaps and Secrets**: Configuration management
+
+=== Key Skills
+
+* Using the OpenShift web console and CLI (`oc`)
+* Deploying applications from container images
+* Building applications from source with Source-to-Image (S2I)
+* Scaling applications horizontally
+* Exposing applications via HTTP and HTTPS
+* Managing application configuration securely
+* Troubleshooting deployments and networking
+
+== Continue Your OpenShift Journey
+
+Now that you understand the fundamentals, here are recommended next steps:
+
+=== OpenShift 201: Intermediate Topics
+
+* **Operators**: Automating application management with Kubernetes Operators
+* **Persistent Storage**: Working with PersistentVolumes and PersistentVolumeClaims
+* **Monitoring and Logging**: Observability with Prometheus, Grafana, and Elasticsearch
+* **CI/CD Pipelines**: Building deployment pipelines with OpenShift Pipelines (Tekton)
+* **Auto-scaling**: Horizontal and vertical pod auto-scaling
+* **Resource Management**: Quotas, LimitRanges, and resource requests/limits
+
+=== Advanced Topics (OpenShift 301)
+
+* **Service Mesh**: Traffic management with OpenShift Service Mesh (Istio)
+* **Serverless**: Event-driven architecture with OpenShift Serverless (Knative)
+* **Multi-cluster Management**: Managing fleets of clusters with Advanced Cluster Management
+* **Security**: Security Context Constraints (SCCs), Network Policies, and compliance
+* **GitOps**: Declarative deployments with ArgoCD
+* **Operator Development**: Building custom Kubernetes Operators
+
+== Learning Resources
+
+=== Official Documentation
+
+* https://docs.openshift.com/container-platform/{openshift_version}/[OpenShift {openshift_version} Documentation,window=_blank]
+* https://access.redhat.com/documentation/en-us/openshift_container_platform[Red Hat OpenShift Documentation Portal,window=_blank]
+* https://kubernetes.io/docs/home/[Kubernetes Documentation,window=_blank]
+
+=== Interactive Learning
+
+* https://learn.openshift.com/[OpenShift Interactive Learning Portal,window=_blank]
++
+Free, browser-based labs covering beginner to advanced topics
+
+* https://developers.redhat.com/products/openshift/getting-started[Red Hat Developer - Getting Started with OpenShift,window=_blank]
++
+Tutorials, guides, and quickstarts
+
+=== Training and Certification
+
+* https://www.redhat.com/en/services/training/do180-introduction-containers-kubernetes-red-hat-openshift[DO180: Introduction to Containers, Kubernetes, and Red Hat OpenShift,window=_blank]
++
+Official Red Hat training course
+
+* https://www.redhat.com/en/services/training/ex180-red-hat-certified-specialist-containers-exam[EX180: Red Hat Certified Specialist in Containers,window=_blank]
++
+Industry-recognized certification
+
+* https://www.redhat.com/en/services/training/do280-red-hat-openshift-administration-ii[DO280: Red Hat OpenShift Administration II,window=_blank]
++
+Advanced administration topics
+
+=== Community and Support
+
+* https://www.openshift.com/[OpenShift Community,window=_blank]
++
+Blog posts, webinars, and community content
+
+* https://developers.redhat.com/[Red Hat Developer,window=_blank]
++
+Free developer subscription, tools, and resources
+
+* https://access.redhat.com/[Red Hat Customer Portal,window=_blank]
++
+Knowledge base articles and support (requires subscription)
+
+== Hands-On Practice Ideas
+
+Want to practice what you've learned? Try these projects:
+
+=== Beginner Projects
+
+* **Deploy a multi-tier application**: Database + API + Frontend
+* **Set up a personal blog**: Use Source-to-Image with a static site generator
+* **Create a REST API**: Deploy a simple Python Flask or Node.js API
+* **Build a container from scratch**: Use Dockerfile or Buildah
+
+=== Intermediate Projects
+
+* **Implement a CI/CD pipeline**: Build, test, and deploy automatically
+* **Add monitoring and alerting**: Set up Prometheus and Grafana
+* **Deploy a database with persistence**: Use StatefulSets and PVCs
+* **Secure an application**: Implement TLS, Secrets, and Network Policies
+
+=== Advanced Projects
+
+* **Deploy a microservices application**: Multiple services with service mesh
+* **Implement GitOps**: Manage deployments with ArgoCD
+* **Build a custom Operator**: Automate application management
+* **Multi-cluster deployment**: Deploy across multiple OpenShift clusters
+
+== Additional OpenShift Features to Explore
+
+=== Developer Tools
+
+* **OpenShift Dev Spaces**: Cloud-based IDE (based on Eclipse Che)
+* **odo**: Developer-focused CLI for fast iterative development
+* **OpenShift Toolkit**: IDE plugins for VS Code, IntelliJ, and Eclipse
+
+=== Platform Features
+
+* **OpenShift Virtualization**: Run virtual machines alongside containers
+* **Red Hat Quay**: Private container registry
+* **Red Hat Advanced Cluster Security**: Container security platform
+* **Red Hat Advanced Cluster Management**: Multi-cluster management
+
+=== Cloud Variants
+
+* **ROSA (Red Hat OpenShift Service on AWS)**: Managed OpenShift on AWS
+* **ARO (Azure Red Hat OpenShift)**: Managed OpenShift on Azure
+* **OpenShift on IBM Cloud**: Managed OpenShift on IBM Cloud
+* **OpenShift Dedicated**: Fully-managed OpenShift clusters
+
+== Your OpenShift Cluster
+
+Your workshop cluster is available at:
+
+* **Console**: {openshift_console_url}[OpenShift Console,window=_blank]
+* **API**: `{openshift_api_url}`
+* **Project**: `workshop-{guid}`
+
+Feel free to continue experimenting with this cluster!
+
+== Clean Up Resources
+
+If you want to clean up the resources you created during this workshop:
+
+[source,bash,role=execute]
+----
+# Delete all deployments
+oc delete deployment parksmap nodejs-app -n workshop-{guid}
+
+# Delete all routes
+oc delete route --all -n workshop-{guid}
+
+# Delete all services
+oc delete service --all -n workshop-{guid}
+
+# Delete all ConfigMaps
+oc delete configmap --all -n workshop-{guid}
+
+# Delete all Secrets (except default service account token)
+oc delete secret --all -n workshop-{guid}
+
+# (Optional) Delete the entire project
+oc delete project workshop-{guid}
+----
+
+WARNING: Deleting the project will remove all resources permanently.
+
+== Feedback
+
+We hope you enjoyed this workshop! Your feedback helps us improve.
+
+If you'd like to share feedback or suggestions:
+
+* Create an issue: https://github.com/open-demo-platform/openshift-101-workshop/issues[GitHub Issues,window=_blank]
+* Contact: platform@example.com
+
+== Thank You!
+
+Thank you for completing the OpenShift 101 workshop!
+
+You now have the skills to:
+
+* Navigate and manage OpenShift clusters
+* Deploy and scale containerized applications
+* Expose applications to users securely
+* Manage configuration effectively
+
+Keep learning, keep building, and welcome to the OpenShift community! 🚀
+
+---
+
+**Workshop Credits**:
+
+* Built on the https://github.com/open-demo-platform/workshop-template[Open Demo Platform Workshop Template,window=_blank]
+* Powered by https://github.com/rhpds/showroom-deployer[Showroom,window=_blank]
+* Based on https://github.com/rhpds/field-sourced-content-template[RHPDS Field Content Patterns,window=_blank]
