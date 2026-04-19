@@ -6,7 +6,7 @@
 # ============================================================
 gitops:
   # Repository containing the component charts
-  repoUrl: "https://github.com/open-demo-platform/openshift-101-workshop.git"
+  repoUrl: "https://github.com/open-demo-platform/openshift-101-workshop-.git"
   revision: "main"
   basePath: "deploy/helm"
 
@@ -52,7 +52,7 @@ components:
     name: showroom
     # Lab guide Git repository
     content:
-      repoUrl: "https://github.com/open-demo-platform/openshift-101-workshop.git"
+      repoUrl: "https://github.com/open-demo-platform/openshift-101-workshop-.git"
       repoRef: "main"
       antoraPlaybook: "site.yml"
       image: "quay.io/rhpds/showroom-content:v1.3.1"

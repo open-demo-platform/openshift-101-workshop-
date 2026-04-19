@@ -16,7 +16,7 @@ spec:
   provisioner:
     type: helm
     source:
-      git: https://github.com/open-demo-platform/openshift-101-workshop.git
+      git: https://github.com/open-demo-platform/openshift-101-workshop-.git
       path: deploy/helm
       ref: main
 
@@ -52,7 +52,7 @@ spec:
     hub:
       showroom:
         enabled: true
-        contentRepo: https://github.com/open-demo-platform/openshift-101-workshop.git
+        contentRepo: https://github.com/open-demo-platform/openshift-101-workshop-.git
         contentPath: content/showroom
     student:
       clusterType: sno  # Options: sno (Single Node OpenShift), compact (3-node)
