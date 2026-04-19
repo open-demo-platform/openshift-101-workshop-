@@ -1,0 +1,20 @@
+site:
+  title: OpenShift 101 Workshop
+  url: http://localhost:8080
+  start_page: modules::index.adoc
+
+content:
+  sources:
+  - url: ./content
+    branches: HEAD
+    start_path: .
+
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+
+asciidoc:
+  attributes:
+    experimental: ''
+    page-pagination: ''
