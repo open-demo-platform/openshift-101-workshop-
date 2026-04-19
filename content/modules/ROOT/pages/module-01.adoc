@@ -65,13 +65,13 @@ The `oc` command-line tool is the primary way to interact with OpenShift from th
 
 . In the terminal below (or the terminal tab), log in to the OpenShift cluster:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc login {openshift_api_url} -u {user} -p {password}
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Login successful.
 
@@ -80,20 +80,20 @@ You have access to 70 projects, the list has been suppressed. You can list all p
 
 . Verify your login by checking your current user:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc whoami
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 {user}
 ----
 
 . Check the OpenShift server version:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc version
 ----
@@ -106,20 +106,20 @@ Let's explore some essential `oc` commands:
 
 . View cluster information:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc cluster-info
 ----
 
 . List all nodes in the cluster:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get nodes
 ----
 +
 .Sample Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME                                         STATUS   ROLES                  AGE   VERSION
 ip-10-0-22-36.us-east-2.compute.internal    Ready    control-plane,master   5d    v1.27.6
@@ -129,7 +129,7 @@ ip-10-0-34-72.us-east-2.compute.internal    Ready    worker                 5d  
 
 . Get more details about a specific node:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe node $(oc get nodes -o jsonpath='{.items[0].metadata.name}')
 ----
@@ -154,33 +154,33 @@ Projects provide:
 
 . Create a new project for this workshop:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc new-project workshop-{guid}
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Now using project "workshop-{guid}" on server "{openshift_api_url}".
 ----
 
 . Verify you're in the correct project:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc project
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Using project "workshop-{guid}" on server "{openshift_api_url}".
 ----
 
 . List all projects you have access to:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc projects
 ----
@@ -189,7 +189,7 @@ oc projects
 
 . Get detailed information about your project:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe project workshop-{guid}
 ----
@@ -206,21 +206,21 @@ You'll see annotations, labels, resource quotas (if any), and more.
 
 . List all projects:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get projects
 ----
 
 . Switch to a different project (e.g., `default`):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc project default
 ----
 
 . Switch back to your workshop project:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc project workshop-{guid}
 ----
@@ -235,27 +235,27 @@ OpenShift is built on Kubernetes, so you can use standard `kubectl` commands wit
 
 . List all resource types available in the cluster:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc api-resources | head -20
 ----
 
 . List pods in your project (currently none):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 No resources found in workshop-{guid} namespace.
 ----
 
 . List pods in all namespaces (admin view):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods --all-namespaces | head -10
 ----
@@ -268,14 +268,14 @@ Labels are key-value pairs attached to objects. They're essential for organizing
 
 . View all projects with labels:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get projects --show-labels
 ----
 
 . View only projects with a specific label (if any):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get projects -l "name=workshop-{guid}"
 ----
@@ -292,7 +292,7 @@ The `oc` CLI supports many shortcuts:
 
 . Try getting services with the shortcut:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get svc -n workshop-{guid}
 ----
@@ -303,21 +303,21 @@ You can change the output format of `oc` commands:
 
 . Get projects in YAML format:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get project workshop-{guid} -o yaml
 ----
 
 . Get projects in JSON format:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get project workshop-{guid} -o json
 ----
 
 . Use JSONPath to extract specific fields:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get project workshop-{guid} -o jsonpath='{.metadata.name}'
 ----
@@ -326,7 +326,7 @@ oc get project workshop-{guid} -o jsonpath='{.metadata.name}'
 
 You can watch resources in real-time using the `-w` flag:
 
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 oc get pods -w
 ----

@@ -50,13 +50,13 @@ quay.io/openshiftroadshow/parksmap:latest
 
 . Check that the pod is running:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -n workshop-{guid}
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME                        READY   STATUS    RESTARTS   AGE
 parksmap-5d6f8c8b4f-xk2w7   1/1     Running   0          2m
@@ -64,14 +64,14 @@ parksmap-5d6f8c8b4f-xk2w7   1/1     Running   0          2m
 
 . Get more details about the pod:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe pod -l deployment=parksmap
 ----
 
 . View the application logs:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l deployment=parksmap
 ----
@@ -98,7 +98,7 @@ S2I works by:
 
 . Create a new application from source:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc new-app nodejs:18-ubi8~https://github.com/sclorg/nodejs-ex.git \
   --name=nodejs-app \
@@ -106,7 +106,7 @@ oc new-app nodejs:18-ubi8~https://github.com/sclorg/nodejs-ex.git \
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 --> Found image abc123... (2 weeks old) in image stream "openshift/nodejs" under tag "18-ubi8" for "nodejs:18-ubi8"
 
@@ -129,7 +129,7 @@ oc new-app nodejs:18-ubi8~https://github.com/sclorg/nodejs-ex.git \
 
 . Watch the build process:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -f bc/nodejs-app
 ----
@@ -138,13 +138,13 @@ TIP: Press `Ctrl+C` to stop following the logs once the build completes.
 
 . Verify the build completed successfully:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get builds
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME           TYPE     FROM          STATUS     STARTED         DURATION
 nodejs-app-1   Source   Git@abc123    Complete   3 minutes ago   2m15s
@@ -152,7 +152,7 @@ nodejs-app-1   Source   Git@abc123    Complete   3 minutes ago   2m15s
 
 . Check that the application deployed:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l deployment=nodejs-app
 ----
@@ -163,7 +163,7 @@ Let's explore what S2I created:
 
 . View the BuildConfig:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get buildconfig nodejs-app -o yaml
 ----
@@ -172,7 +172,7 @@ This shows the build strategy, source repository, and output image.
 
 . View the ImageStream:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get imagestream nodejs-app
 ----
@@ -181,7 +181,7 @@ ImageStreams are OpenShift-specific resources that track container image updates
 
 . View the Deployment:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get deployment nodejs-app
 ----
@@ -195,13 +195,13 @@ OpenShift makes it easy to scale applications horizontally (adding more pods).
 
 . Check current replicas:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get deployment parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME       READY   UP-TO-DATE   AVAILABLE   AGE
 parksmap   1/1     1            1           10m
@@ -209,26 +209,26 @@ parksmap   1/1     1            1           10m
 
 . Scale the `parksmap` deployment to 3 replicas:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc scale deployment/parksmap --replicas=3
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 deployment.apps/parksmap scaled
 ----
 
 . Verify the scaling:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l deployment=parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME                        READY   STATUS    RESTARTS   AGE
 parksmap-5d6f8c8b4f-4l9xm   1/1     Running   0          15s
@@ -238,7 +238,7 @@ parksmap-5d6f8c8b4f-xk2w7   1/1     Running   0          10m
 
 . Watch the pods scale in real-time:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l deployment=parksmap -w
 ----
@@ -257,14 +257,14 @@ TIP: Press `Ctrl+C` to stop watching.
 
 . Scale back to 1 replica:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc scale deployment/parksmap --replicas=1
 ----
 
 . Verify:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l deployment=parksmap
 ----
@@ -275,27 +275,27 @@ S2I builds can be triggered manually to rebuild the application.
 
 . Trigger a new build for the Node.js app:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc start-build nodejs-app
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 build.build.openshift.io/nodejs-app-2 started
 ----
 
 . Watch the new build:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -f build/nodejs-app-2
 ----
 
 . List all builds:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get builds
 ----
@@ -310,33 +310,33 @@ OpenShift automatically performs rolling updates when you change a deployment.
 
 . View the current image:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get deployment parksmap -o jsonpath='{.spec.template.spec.containers[0].image}'
 ----
 
 . Update the deployment to use a different tag (simulating an update):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc set image deployment/parksmap parksmap=quay.io/openshiftroadshow/parksmap:1.3.0
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 deployment.apps/parksmap image updated
 ----
 
 . Watch the rolling update:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout status deployment/parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Waiting for deployment "parksmap" rollout to finish: 0 of 1 updated replicas are available...
 deployment "parksmap" successfully rolled out
@@ -344,7 +344,7 @@ deployment "parksmap" successfully rolled out
 
 . View rollout history:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout history deployment/parksmap
 ----
@@ -353,20 +353,20 @@ oc rollout history deployment/parksmap
 
 . Roll back to the previous version:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout undo deployment/parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 deployment.apps/parksmap rolled back
 ----
 
 . Verify the rollback:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout status deployment/parksmap
 ----
@@ -377,7 +377,7 @@ oc rollout status deployment/parksmap
 
 . Get comprehensive details about a deployment:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe deployment parksmap
 ----
@@ -388,7 +388,7 @@ This shows replicas, selectors, pod templates, events, and conditions.
 
 . List recent events in your project:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get events --sort-by='.lastTimestamp' | tail -20
 ----
@@ -399,14 +399,14 @@ Events show scaling, pod creation, image pulls, and errors.
 
 . View logs from all pods with a specific label:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l deployment=parksmap --tail=50
 ----
 
 . Stream logs in real-time:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -f -l deployment=parksmap
 ----

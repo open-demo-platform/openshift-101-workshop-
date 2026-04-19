@@ -1,0 +1,15 @@
+# Test user_data.yml for validation
+# These values will be merged into content/antora.yml
+
+openshift_cluster_domain: apps.test-cluster.example.com
+openshift_api_url: https://api.test-cluster.example.com:6443
+openshift_console_url: https://console-openshift-console.apps.test-cluster.example.com
+user: testuser
+password: "testpass123"
+guid: test-guid-abc
+
+# Legacy compatibility
+cluster_domain: apps.test-cluster.example.com
+demo_namespace: parksmap-demo
+demo_app: parksmap
+username: testuser

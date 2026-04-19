@@ -256,13 +256,17 @@ validate_html_attributes() {
     for attr in "${!expected_values[@]}"; do
         local expected="${expected_values[$attr]}"
 
-        # Check if literal placeholder appears
-        if grep -q "{$attr}" "$html_file"; then
-            log_error "Attribute {$attr} NOT substituted (appears literally)"
+        # Check if literal placeholder appears in content (exclude navbar/metadata)
+        # Filter out canonical links and navbar which use site.yml attributes
+        local content_only
+        content_only=$(grep -v "canonical\|navbar" "$html_file")
+
+        if echo "$content_only" | grep -q "{$attr}"; then
+            log_error "Attribute {$attr} NOT substituted (appears literally in content)"
             failed=$((failed + 1))
             log_verbose "Expected: $expected"
             log_verbose "Found: {$attr}"
-        elif grep -q "$expected" "$html_file"; then
+        elif echo "$content_only" | grep -q "$expected"; then
             log_success "Attribute {$attr} → $expected ✓"
         else
             log_warning "Attribute {$attr} not found in HTML (might not be used)"

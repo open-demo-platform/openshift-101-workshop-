@@ -29,13 +29,13 @@ OpenShift supports several Service types:
 
 . List services in your project:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get services -n workshop-{guid}
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 nodejs-app   ClusterIP   172.30.123.45    <none>        8080/TCP   20m
@@ -44,13 +44,13 @@ parksmap     ClusterIP   172.30.67.89     <none>        8080/TCP   30m
 
 . Describe a service:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe service parksmap
 ----
 +
 .Key Information
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Name:              parksmap
 Namespace:         workshop-{guid}
@@ -68,21 +68,21 @@ NOTE: The `Selector` field shows which pods this Service targets. The `Endpoints
 
 . Get the Service's cluster IP:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get service parksmap -o jsonpath='{.spec.clusterIP}'
 ----
 
 . Create a temporary pod to test connectivity:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc run test-pod --image=registry.access.redhat.com/ubi9/ubi-minimal:latest --rm -it --restart=Never -- /bin/bash
 ----
 +
 This creates an interactive pod. Inside the pod, run:
 +
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 curl http://parksmap.workshop-{guid}.svc.cluster.local:8080
 ----
@@ -99,7 +99,7 @@ While `oc new-app` creates Services automatically, you can create them manually:
 
 . Create a Service YAML file:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -119,14 +119,14 @@ EOF
 
 . Verify the Service was created:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get service custom-service
 ----
 
 . Delete the custom service (we don't need it):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc delete service custom-service
 ----
@@ -145,26 +145,26 @@ oc delete service custom-service
 
 . Expose the `parksmap` Service as a Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc expose service parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 route.route.openshift.io/parksmap exposed
 ----
 
 . View the created Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route parksmap
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME       HOST/PORT                                                              PATH   SERVICES   PORT       TERMINATION   WILDCARD
 parksmap   parksmap-workshop-{guid}.{openshift_cluster_domain}                          parksmap   8080-tcp                 None
@@ -172,14 +172,14 @@ parksmap   parksmap-workshop-{guid}.{openshift_cluster_domain}                  
 
 . Get the Route URL:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 echo "http://$(oc get route parksmap -o jsonpath='{.spec.host}')"
 ----
 
 . Test the Route with curl:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl -s http://$(oc get route parksmap -o jsonpath='{.spec.host}') | head -20
 ----
@@ -190,7 +190,7 @@ You should see HTML output from the parksmap application.
 
 . Get the full Route URL:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route parksmap -o jsonpath='{"http://"}{.spec.host}{"\n"}'
 ----
@@ -215,14 +215,14 @@ You should see the Parks Map application UI.
 
 . Verify the Route was created:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route nodejs-app
 ----
 
 . Access the nodejs-app via the Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl http://$(oc get route nodejs-app -o jsonpath='{.spec.host}')
 ----
@@ -242,7 +242,7 @@ OpenShift Routes support TLS termination, providing encrypted HTTPS access to yo
 
 . Create a secure Route for the parksmap application:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create route edge parksmap-secure \
   --service=parksmap \
@@ -250,20 +250,20 @@ oc create route edge parksmap-secure \
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 route.route.openshift.io/parksmap-secure created
 ----
 
 . View the secure Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route parksmap-secure
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 NAME              HOST/PORT                                                                     PATH   SERVICES   PORT       TERMINATION   WILDCARD
 parksmap-secure   parksmap-secure-workshop-{guid}.{openshift_cluster_domain}                          parksmap   8080-tcp   edge          None
@@ -273,14 +273,14 @@ NOTE: The `TERMINATION` column shows `edge`, indicating TLS termination at the r
 
 . Test HTTPS access:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl -s https://$(oc get route parksmap-secure -o jsonpath='{.spec.host}') | head -20
 ----
 
 . View the Route configuration:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route parksmap-secure -o yaml
 ----
@@ -304,14 +304,14 @@ Look for the `tls:` section showing the termination type.
 
 . Verify the secure Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route nodejs-app-secure
 ----
 
 . Test HTTPS access:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl -L https://$(oc get route nodejs-app-secure -o jsonpath='{.spec.host}')
 ----
@@ -324,7 +324,7 @@ NOTE: The `-L` flag follows redirects (HTTP → HTTPS).
 
 You can specify custom hostnames for Routes (if your cluster's domain supports it):
 
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 oc create route edge my-custom-route \
   --service=parksmap \
@@ -339,7 +339,7 @@ Routes support path-based routing:
 
 . Create a Route with a specific path:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF | oc apply -f -
 apiVersion: route.openshift.io/v1
@@ -359,21 +359,21 @@ EOF
 
 . Verify the Route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get route parksmap-path
 ----
 
 . Test access (this may return 404 if the app doesn't serve at /parks):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl http://$(oc get route parksmap-path -o jsonpath='{.spec.host}')/parks
 ----
 
 . Clean up the path-based route:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc delete route parksmap-path
 ----
@@ -386,14 +386,14 @@ Routes automatically load-balance traffic across multiple pod replicas.
 
 . Scale the parksmap deployment to 3 replicas:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc scale deployment/parksmap --replicas=3
 ----
 
 . Wait for all pods to be ready:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l deployment=parksmap -w
 ----
@@ -402,7 +402,7 @@ Press `Ctrl+C` once all 3 pods show `Running`.
 
 . Make multiple requests to see load balancing:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 for i in {1..10}; do
   curl -s http://$(oc get route parksmap -o jsonpath='{.spec.host}') | grep -o 'parksmap-[a-z0-9]*'
@@ -413,7 +413,7 @@ You should see requests distributed across different pod names.
 
 . Scale back to 1 replica:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc scale deployment/parksmap --replicas=1
 ----
@@ -424,7 +424,7 @@ oc scale deployment/parksmap --replicas=1
 
 If a Service isn't working, check if it has endpoints:
 
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get endpoints parksmap
 ----
@@ -435,14 +435,14 @@ If `ENDPOINTS` is `<none>`, the Service selector doesn't match any pods.
 
 . Describe a Route to see its status:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe route parksmap
 ----
 
 . Look for the `Admitted` status:
 +
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 Status:
   Ingress:
@@ -455,14 +455,14 @@ Status:
 
 . Test internal Service connectivity:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc run test-curl --image=registry.access.redhat.com/ubi9/ubi-minimal:latest --rm -it --restart=Never -- curl -s http://parksmap:8080
 ----
 
 . Test external Route connectivity:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 curl -I http://$(oc get route parksmap -o jsonpath='{.spec.host}')
 ----

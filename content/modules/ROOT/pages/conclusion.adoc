@@ -163,7 +163,7 @@ Feel free to continue experimenting with this cluster!
 
 If you want to clean up the resources you created during this workshop:
 
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 # Delete all deployments
 oc delete deployment parksmap nodejs-app -n workshop-{guid}

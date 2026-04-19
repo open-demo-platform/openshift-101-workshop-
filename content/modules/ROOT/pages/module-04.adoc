@@ -21,7 +21,7 @@ In this module, you'll learn how to manage application configuration in OpenShif
 
 . Create a ConfigMap with literal values:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create configmap app-config \
   --from-literal=APP_NAME="OpenShift 101 Workshop" \
@@ -31,14 +31,14 @@ oc create configmap app-config \
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 configmap/app-config created
 ----
 
 . View the ConfigMap:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get configmap app-config -o yaml
 ----
@@ -59,7 +59,7 @@ data:
 
 . List all ConfigMaps:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get configmaps
 ----
@@ -68,7 +68,7 @@ oc get configmaps
 
 . Create a sample configuration file:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF > /tmp/app.properties
 database.host=postgres.example.com
@@ -81,7 +81,7 @@ EOF
 
 . Create a ConfigMap from the file:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create configmap app-properties \
   --from-file=/tmp/app.properties \
@@ -90,7 +90,7 @@ oc create configmap app-properties \
 
 . View the ConfigMap:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get configmap app-properties -o yaml
 ----
@@ -101,7 +101,7 @@ Notice the entire file content is stored as a single key-value pair.
 
 . Create a ConfigMap using YAML:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF | oc apply -f -
 apiVersion: v1
@@ -119,7 +119,7 @@ EOF
 
 . Verify the ConfigMap:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe configmap database-config
 ----
@@ -142,7 +142,7 @@ OpenShift supports several Secret types:
 
 . Create a Secret for database credentials:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create secret generic database-credentials \
   --from-literal=DB_USERNAME=appuser \
@@ -151,14 +151,14 @@ oc create secret generic database-credentials \
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 secret/database-credentials created
 ----
 
 . View the Secret (values are base64-encoded):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get secret database-credentials -o yaml
 ----
@@ -181,14 +181,14 @@ NOTE: The values are base64-encoded, NOT encrypted. Use OpenShift encryption at 
 
 . Decode a secret value:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get secret database-credentials -o jsonpath='{.data.DB_PASSWORD}' | base64 -d
 echo
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 SuperSecret123!
 ----
@@ -197,7 +197,7 @@ SuperSecret123!
 
 . Create a sample SSH private key (dummy for demo):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF > /tmp/id_rsa
 -----BEGIN RSA PRIVATE KEY-----
@@ -209,7 +209,7 @@ EOF
 
 . Create a Secret from the file:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create secret generic ssh-key \
   --from-file=id_rsa=/tmp/id_rsa \
@@ -218,7 +218,7 @@ oc create secret generic ssh-key \
 
 . View the Secret:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get secret ssh-key -o yaml
 ----
@@ -227,7 +227,7 @@ oc get secret ssh-key -o yaml
 
 . Create a self-signed certificate (for demo):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /tmp/tls.key \
@@ -237,7 +237,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 . Create a TLS Secret:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc create secret tls myapp-tls \
   --cert=/tmp/tls.crt \
@@ -247,7 +247,7 @@ oc create secret tls myapp-tls \
 
 . View the TLS Secret:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc describe secret myapp-tls
 ----
@@ -261,7 +261,7 @@ Now let's use ConfigMaps and Secrets in a running application.
 
 . Create a deployment that uses ConfigMap and Secret as environment variables:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF | oc apply -f -
 apiVersion: apps/v1
@@ -310,27 +310,27 @@ EOF
 
 . Verify the deployment:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get deployment config-demo
 ----
 
 . Wait for the pod to be running:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l app=config-demo
 ----
 
 . View the pod logs to see environment variables in action:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l app=config-demo --tail=5
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 App: OpenShift 101 Workshop, Env: development, DB User: appuser
 App: OpenShift 101 Workshop, Env: development, DB User: appuser
@@ -344,7 +344,7 @@ ConfigMaps and Secrets can be mounted as files in a pod.
 
 . Create a deployment with ConfigMap mounted as a volume:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 cat <<EOF | oc apply -f -
 apiVersion: apps/v1
@@ -384,14 +384,14 @@ EOF
 
 . Wait for the pod to be running:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc get pods -l app=volume-demo
 ----
 
 . View the logs to see mounted configuration files:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l app=volume-demo --tail=20
 ----
@@ -400,14 +400,14 @@ You'll see the contents of `app.properties` and files from `database-config`.
 
 . Exec into the pod to explore the mounted volumes:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc exec -it deployment/volume-demo -- /bin/sh
 ----
 +
 Inside the pod, run:
 +
-[source,bash]
+[source,bash,subs="attributes+"]
 ----
 ls -la /etc/config/
 cat /etc/config/app.properties
@@ -424,14 +424,14 @@ When you update a ConfigMap or Secret, pods using them need to be aware of chang
 
 . Update the `app-config` ConfigMap:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc patch configmap app-config -p '{"data":{"APP_ENV":"production","LOG_LEVEL":"info"}}'
 ----
 
 . Check if the pod picked up the change (environment variables):
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l app=config-demo --tail=3
 ----
@@ -440,27 +440,27 @@ NOTE: Environment variables do NOT update automatically. The pod must be restart
 
 . Restart the deployment to pick up new environment variables:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout restart deployment/config-demo
 ----
 
 . Wait for the new pod:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc rollout status deployment/config-demo
 ----
 
 . Verify the new environment variables:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc logs -l app=config-demo --tail=3
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 App: OpenShift 101 Workshop, Env: production, DB User: appuser
 ----
@@ -471,21 +471,21 @@ NOTE: Mounted volumes (ConfigMaps as files) update automatically within ~60 seco
 
 . Update the `database-config` ConfigMap:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc patch configmap database-config -p '{"data":{"DB_POOL_SIZE":"20"}}'
 ----
 
 . Wait ~60 seconds for the volume to sync, then check the pod:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 sleep 65
 oc exec deployment/volume-demo -- cat /etc/db-config/DB_POOL_SIZE
 ----
 +
 .Expected Output
-[source,textinfo]
+[source,textinfo,subs="attributes+"]
 ----
 20
 ----
@@ -515,14 +515,14 @@ The file was updated without restarting the pod!
 
 . Delete the demo deployments:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc delete deployment config-demo volume-demo
 ----
 
 . (Optional) Delete ConfigMaps and Secrets:
 +
-[source,bash,role=execute]
+[source,bash,role=execute,subs="attributes+"]
 ----
 oc delete configmap app-config app-properties database-config
 oc delete secret database-credentials ssh-key myapp-tls
