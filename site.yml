@@ -1,6 +1,6 @@
 site:
   title: OpenShift 101 Workshop
-  url: https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
+  url: https://showroom-{guid}.apps.{cluster-domain}
   start_page: modules::index.adoc
 
 content:
