@@ -10,7 +10,7 @@ echo ""
 
 # Test 1: Showroom Content
 echo "1. Testing Showroom content..."
-if [ -d "content/showroom" ]; then
+if [ -d "content" ] && [ -f "site.yml" ]; then
     echo "   ✓ Showroom content directory exists"
 
     # Check if podman is available
@@ -19,18 +19,16 @@ if [ -d "content/showroom" ]; then
         echo "   Open http://localhost:8080 in your browser"
         echo "   Press Ctrl+C to stop"
         echo ""
-        cd content/showroom
         podman run --rm --name antora \
           -v $PWD:/antora:z \
           -p 8080:8080 -i -t \
           ghcr.io/juliaaano/antora-viewer
-        cd ../..
     else
         echo "   ⚠ Podman not found - skipping Showroom preview"
         echo "   Install podman to test lab guides locally"
     fi
 else
-    echo "   ✗ Showroom content directory not found"
+    echo "   ✗ Showroom content directory or site.yml not found"
     exit 1
 fi
 

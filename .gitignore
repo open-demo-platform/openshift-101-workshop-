@@ -39,3 +39,6 @@ charts/*.tgz
 # Testing output
 /tmp/
 *.local.md
+www/
+test-content/
+/tmp/test-site.yml
