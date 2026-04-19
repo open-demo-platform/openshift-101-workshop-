@@ -1,0 +1,59 @@
+---
+apiVersion: babylon.gpte.redhat.com/v1
+kind: Workshop
+metadata:
+  name: openshift-101
+  namespace: babylon-workshops
+  labels:
+    category: openshift
+    difficulty: beginner
+    duration: 4h
+spec:
+  displayName: "OpenShift 101: Fundamentals"
+  description: "Master OpenShift Container Platform basics - learn console, CLI, deployments, routes, and configuration management"
+
+  # How to provision this workshop
+  provisioner:
+    type: helm
+    source:
+      git: https://github.com/open-demo-platform/openshift-101-workshop.git
+      path: deploy/helm
+      ref: main
+
+  # What gets deployed
+  resources:
+    - type: namespace
+      name: workshop-{{.user}}
+    - type: deployment
+      name: lab-environment
+
+  # User access
+  accessMethods:
+    - type: route
+      url: https://workshop-{{.user}}.apps.{{.clusterDomain}}
+    - type: console
+      url: https://console-openshift-console.apps.{{.clusterDomain}}
+    - type: showroom
+      url: https://showroom-{{.user}}.apps.{{.clusterDomain}}
+
+  # Workshop metadata
+  tags:
+    - openshift
+    - kubernetes
+    - containers
+    - beginner
+    - fundamentals
+  estimatedDuration: 4h
+  maxUsers: 50
+
+  # Hub-student topology configuration
+  topology:
+    type: hub-student
+    hub:
+      showroom:
+        enabled: true
+        contentRepo: https://github.com/open-demo-platform/openshift-101-workshop.git
+        contentPath: content/showroom
+    student:
+      clusterType: sno  # Options: sno (Single Node OpenShift), compact (3-node)
+      count: 1          # Number of student clusters (default: 1)

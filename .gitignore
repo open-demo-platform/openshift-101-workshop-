@@ -1,0 +1,41 @@
+# Workshop Template .gitignore
+
+# Local development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Secrets and credentials
+secrets/
+*.key
+*.pem
+credentials.yaml
+kubeconfig
+*kubeconfig*
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+.env
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ansible
+*.retry
+.ansible/
+
+# Helm
+charts/*.tgz
+
+# Testing output
+/tmp/
+*.local.md

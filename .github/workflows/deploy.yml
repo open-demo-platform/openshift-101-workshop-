@@ -1,0 +1,42 @@
+name: Deploy Workshop to Babylon
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: '4.14'
+
+      - name: Login to OpenShift
+        env:
+          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
+        run: |
+          echo "$KUBECONFIG_CONTENT" > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+          oc whoami
+
+      - name: Deploy Workshop CR
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          oc apply -f workshop.yaml -n babylon-workshops
+
+      - name: Verify Deployment
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+        run: |
+          export KUBECONFIG=/tmp/kubeconfig
+          oc get workshop -n babylon-workshops
+          echo "Workshop deployed successfully!"
