@@ -12,16 +12,16 @@ asciidoc:
 
     # OpenShift cluster configuration (populated by user_data.yml merge)
     openshift_version: "4.14"
-    openshift_cluster_domain: ""
-    openshift_api_url: ""
-    openshift_console_url: ""
+    openshift_cluster_domain: "apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com"
+    openshift_api_url: "https://api.open-demo-platform.odp-prod.sandbox3047.opentlc.com:6443"
+    openshift_console_url: "https://console-openshift-console.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com"
 
     # User credentials (populated by user_data.yml merge)
-    user: ""
+    user: "admin"
     password: ""
 
     # Workshop settings (populated by user_data.yml merge)
-    guid: ""
+    guid: "showroom"
     page-toclevels: 2
 
     page-links:
