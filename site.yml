@@ -1,0 +1,20 @@
+site:
+  title: OpenShift 101 Workshop
+  url: https://showroom-showroom.apps.open-demo-platform.odp-prod.sandbox3047.opentlc.com
+  start_page: modules::index.adoc
+
+content:
+  sources:
+  - url: .
+    branches: HEAD
+    start_path: content/showroom/content
+
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true
+
+asciidoc:
+  attributes:
+    experimental: ''
+    page-pagination: ''
