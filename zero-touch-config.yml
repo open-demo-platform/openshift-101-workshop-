@@ -1,0 +1,13 @@
+# Zero Touch / Nookbag Configuration
+# This configures the Showroom UI to load the Antora content
+
+content:
+  url: /modules/index.html
+  type: antora
+
+terminal:
+  enabled: true
+
+ui:
+  title: "OpenShift 101: Fundamentals Workshop"
+  defaultTab: content
