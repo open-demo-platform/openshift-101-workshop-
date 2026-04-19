@@ -12,16 +12,16 @@ asciidoc:
 
     # OpenShift cluster configuration (populated by user_data.yml merge)
     openshift_version: "4.14"
-    # openshift_cluster_domain: populated from user_data.yml
-    # openshift_api_url: populated from user_data.yml
-    # openshift_console_url: populated from user_data.yml
+    openshift_cluster_domain: ""
+    openshift_api_url: ""
+    openshift_console_url: ""
 
     # User credentials (populated by user_data.yml merge)
-    # user: populated from user_data.yml
-    # password: populated from user_data.yml
+    user: ""
+    password: ""
 
     # Workshop settings (populated by user_data.yml merge)
-    # guid: populated from user_data.yml
+    guid: ""
     page-toclevels: 2
 
     page-links:
